@@ -1,5 +1,4 @@
 name: Lean 4 CI
-
 on:
   push:
     branches: [ main ]
@@ -13,13 +12,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Elan
+      - name: Install Elan (Lean toolchain manager)
         run: |
           curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y
           echo "$HOME/.elan/bin" >> $GITHUB_PATH
 
-      - name: Build Lean Code
+      - name: Set Lean Version and Build
         run: |
-          # リポジトリ内のすべてのLeanファイルをチェック
-         
-          elan run lean MetaAxiomsImproved.lean
+          # 使うバージョンを明示的に指定（最新の安定版）
+          elan default leanprover/lean4:stable
+          # 自分のファイルだけをチェック
+          lean FTheoryCosmologicalImproved.lean
