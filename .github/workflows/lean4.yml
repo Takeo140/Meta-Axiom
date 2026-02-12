@@ -1,4 +1,5 @@
 name: Meta-Axiom Foundation CI
+
 on:
   push:
     branches: [ main ]
@@ -12,18 +13,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup and Verify Axioms
+      - name: Setup Lean and Mathlib
         run: |
-          # 1. Elan (ツールマネージャー) のインストール
+          # 1. Elanのセットアップ
           curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y
-          
-          # 2. パスを強制的に通す
           export PATH="$HOME/.elan/bin:$PATH"
-
-          # 3. Lean 4 安定版をこの場でセットアップ
           elan toolchain install leanprover/lean4:stable
           elan default leanprover/lean4:stable
 
-          # 4. メタ公理のファイルを検閲
-          echo "--- 産業最適化・メタ公理の論理チェック開始 ---"
-          lean MetaAxiomsImproved.lean
+          # 2. メタ公理用のLake設定（ファイル名はリポジトリに合わせてください）
+          echo 'import Lake' > lakefile.lean
+          echo 'open Lake DSL' >> lakefile.lean
+          echo 'package meta_axiom' >> lakefile.lean
+          echo 'require mathlib from git "https://github.com/leanprover-community/mathlib4"' >> lakefile.lean
+          echo 'lean_lib MetaAxioms' >> lakefile.lean
+
+          # 3. ライブラリ取得
+          lake update
+          lake exe cache get || true
+
+          echo "--- 検閲開始（1000億円を0にする論理のチェック） ---"
+          # 4. ビルド実行
+          lake build
