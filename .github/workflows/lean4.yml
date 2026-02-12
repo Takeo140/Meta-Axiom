@@ -21,4 +21,5 @@ jobs:
       - name: Build Lean Code
         run: |
           # リポジトリ内のすべてのLeanファイルをチェック
+         
           elan run lean MetaAxiomsImproved.lean
