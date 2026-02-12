@@ -17,20 +17,15 @@ jobs:
           curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y
           echo "$HOME/.elan/bin" >> $GITHUB_PATH
 
-      - name: Initialize Lake Project and Check
+      - name: Set Lean Toolchain
         run: |
-          # ツールチェーンの確定
-          elan default leanprover/lean4:stable
-          # 最小限のプロジェクト構成をその場で作る
-          echo 'import Lake' > lakefile.lean
-          echo 'open Lake DSL' >> lakefile.lean
-          echo 'package my_theory' >> lakefile.lean
-          echo 'require mathlib from git "https://github.com/leanprover-community/mathlib4"' >> lakefile.lean
-          
-          # ライブラリの取得（ここが少し時間がかかります）
-          elan run lake update
-          
-          # ファイルの型チェックを実行
-          # ※宇宙レポジトリなら下を FTheoryCosmologicalImproved.lean に変更
-          # ※メタ公理レポジトリなら下を MetaAxiomsImproved.lean に変更
-          elan run lean MetaAxiomsImproved.lean
+          # ツールチェーンを明示的にインストールして強制反映
+          $HOME/.elan/bin/elan toolchain install leanprover/lean4:stable
+          $HOME/.elan/bin/elan default leanprover/lean4:stable
+
+      - name: Build Lean File
+        run: |
+          # 直接 elan を介して lean を叩き、ファイルをチェック
+          # ※宇宙物理レポジトリなら下を FTheoryCosmologicalImproved.lean に
+          # ※メタ公理レポジトリなら下を MetaAxiomsImproved.lean に
+          $HOME/.elan/bin/elan run lean MetaAxiomsImproved.lean
