@@ -12,14 +12,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Elan (Lean toolchain manager)
+      - name: Install Elan
         run: |
           curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y
           echo "$HOME/.elan/bin" >> $GITHUB_PATH
 
-      - name: Set Lean Version and Build
+      - name: Initialize Lake Project and Check
         run: |
-          # 使うバージョンを明示的に指定（最新の安定版）
+          # ツールチェーンの確定
           elan default leanprover/lean4:stable
-          # 自分のファイルだけをチェック
-          lean MetaAxiomsImproved.lean
+          # 最小限のプロジェクト構成をその場で作る
+          echo 'import Lake' > lakefile.lean
+          echo 'open Lake DSL' >> lakefile.lean
+          echo 'package my_theory' >> lakefile.lean
+          echo 'require mathlib from git "https://github.com/leanprover-community/mathlib4"' >> lakefile.lean
+          
+          # ライブラリの取得（ここが少し時間がかかります）
+          elan run lake update
+          
+          # ファイルの型チェックを実行
+          # ※宇宙レポジトリなら下を FTheoryCosmologicalImproved.lean に変更
+          # ※メタ公理レポジトリなら下を MetaAxiomsImproved.lean に変更
+          elan run lean MetaAxiomsImproved.lean
