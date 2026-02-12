@@ -22,4 +22,4 @@ jobs:
           # 使うバージョンを明示的に指定（最新の安定版）
           elan default leanprover/lean4:stable
           # 自分のファイルだけをチェック
-          lean FTheoryCosmologicalImproved.lean
+          lean MetaAxiomsImproved.lean
