@@ -36,3 +36,5 @@ You are free to share, adapt, and use this for any purpose—including commercia
 **DOI:** [https://doi.org/10.5281/zenodo.18603974]
 
 Author: Takeo Yamamoto
+
+License: CC BY 4.0 (Attribution Required)
