@@ -34,4 +34,5 @@ You are free to share, adapt, and use this for any purpose—including commercia
 *"The truth does not require belief; it only requires execution."*
 
 **DOI:** [https://doi.org/10.5281/zenodo.18603974]
-**Contact:** 
+
+Author: Takeo Yamamoto
