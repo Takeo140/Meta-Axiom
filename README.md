@@ -27,6 +27,8 @@ The world currently wastes trillions on sub-optimal processes. This repository i
 ## 5. Usage and License
 This project is licensed under **CC BY 4.0**. 
 You are free to share, adapt, and use this for any purpose—including commercial and military applications—provided that appropriate credit is given to the original author.
+ 
+"A profound theory, formally verified in Lean 4, CI passing."
 
 ---
 *"The truth does not require belief; it only requires execution."*
