@@ -1,12 +1,16 @@
-name: Meta-Axiom Foundation CI
+name: Meta-Axiom CI + Auto Merge
 
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+    types: [opened, reopened, synchronize]
 
 jobs:
+  # ------------------------------
+  # 1. ビルド＆CI確認
+  # ------------------------------
   build:
     runs-on: ubuntu-latest
     steps:
@@ -15,23 +19,56 @@ jobs:
 
       - name: Setup Lean and Mathlib
         run: |
-          # 1. Elanのセットアップ
           curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install leanprover/lean4:stable
           elan default leanprover/lean4:stable
 
-          # 2. メタ公理用のLake設定（ファイル名はリポジトリに合わせてください）
           echo 'import Lake' > lakefile.lean
           echo 'open Lake DSL' >> lakefile.lean
           echo 'package meta_axiom' >> lakefile.lean
           echo 'require mathlib from git "https://github.com/leanprover-community/mathlib4"' >> lakefile.lean
           echo 'lean_lib MetaAxioms' >> lakefile.lean
 
-          # 3. ライブラリ取得
           lake update
           lake exe cache get || true
 
-          echo "--- 検閲開始（1000億円を0にする論理のチェック） ---"
-          # 4. ビルド実行
           lake build
+
+  # ------------------------------
+  # 2. CI緑なら自動マージ
+  # ------------------------------
+  auto-merge:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Auto Merge if CI Green
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = context.payload.pull_request;
+            if (!pr) {
+              console.log("Not a pull request, skipping auto-merge.");
+              return;
+            }
+
+            const status = await github.rest.repos.getCombinedStatusForRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: pr.head.sha
+            });
+
+            const allGreen = status.data.statuses.every(s => s.state === "success");
+
+            if (allGreen) {
+              console.log(`All CI passed. Auto-merging PR #${pr.number}`);
+              await github.rest.pulls.merge({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+                merge_method: "squash"
+              });
+            } else {
+              console.log("CI not green, skipping merge.");
+            }
