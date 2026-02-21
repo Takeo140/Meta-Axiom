@@ -3,13 +3,11 @@ name: Meta-Axiom CI + Auto Merge
 on:
   pull_request:
     branches: [ main ]
-    types: [opened, reopened, synchronize, ready_for_review]
+    types: [opened, reopened, synchronize]
 
 jobs:
-  # ------------------------------
-  # 1. Lean + mathlib ビルド
-  # ------------------------------
   build:
+    name: Lean + mathlib Build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -22,7 +20,6 @@ jobs:
           elan toolchain install leanprover/lean4:stable
           elan default leanprover/lean4:stable
 
-          # lakefile.lean の作成
           echo 'import Lake' > lakefile.lean
           echo 'open Lake DSL' >> lakefile.lean
           echo 'package meta_axiom' >> lakefile.lean
@@ -33,28 +30,31 @@ jobs:
           lake exe cache get || true
           lake build
 
-  # ------------------------------
-  # 2. CI 緑なら即自動マージ
-  # ------------------------------
   auto-merge:
+    name: Auto Merge if CI Green
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Auto Merge if Build Passed
+      - name: Auto Merge
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }} # ブランチ保護がある場合は PAT 推奨
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const pr = context.payload.pull_request;
-            if (!pr) {
-              console.log("Not a pull request, skipping auto-merge.");
-              return;
-            }
+            if (!pr) return;
 
-            console.log(`Lean + mathlib CI passed. Auto-merging PR #${pr.number}`);
-            await github.rest.pulls.merge({
+            const status = await github.rest.repos.getCombinedStatusForRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              pull_number: pr.number,
-              merge_method: "squash"
+              ref: pr.head.sha
             });
+
+            const allGreen = status.data.statuses.every(s => s.state === "success");
+            if (allGreen) {
+              await github.rest.pulls.merge({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+                merge_method: "squash"
+              });
+            }
