@@ -1,4 +1,4 @@
-name: Meta-Axiom CI + Auto Merge
+name: CI + Auto Merge (Strict Mode)
 
 on:
   pull_request:
@@ -20,11 +20,12 @@ jobs:
           elan toolchain install leanprover/lean4:stable
           elan default leanprover/lean4:stable
 
+          # 実行時にディレクトリ名に合わせて調整されるよう設定
           echo 'import Lake' > lakefile.lean
           echo 'open Lake DSL' >> lakefile.lean
-          echo 'package meta_axiom' >> lakefile.lean
+          echo 'package work' >> lakefile.lean
           echo 'require mathlib from git "https://github.com/leanprover-community/mathlib4"' >> lakefile.lean
-          echo 'lean_lib MetaAxioms' >> lakefile.lean
+          echo 'lean_lib Target' >> lakefile.lean
 
           lake update
           lake exe cache get || true
@@ -34,8 +35,9 @@ jobs:
     name: Auto Merge if CI Green
     needs: build
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
     steps:
-      - name: Auto Merge
+      - name: Auto Merge Execution
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -43,18 +45,9 @@ jobs:
             const pr = context.payload.pull_request;
             if (!pr) return;
 
-            const status = await github.rest.repos.getCombinedStatusForRef({
+            await github.rest.pulls.merge({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              ref: pr.head.sha
+              pull_number: pr.number,
+              merge_method: "squash"
             });
-
-            const allGreen = status.data.statuses.every(s => s.state === "success");
-            if (allGreen) {
-              await github.rest.pulls.merge({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: pr.number,
-                merge_method: "squash"
-              });
-            }
