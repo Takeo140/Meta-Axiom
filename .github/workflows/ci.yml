@@ -2,7 +2,7 @@ name: Meta-Axiom CI + Auto Merge
 
 on:
   push:
-    branches: [ main ]  # mainブランチへのpushでCI
+    branches: [ main ]  # メインブランチの履歴に ✅ を刻む
   pull_request:
     branches: [ main ]
     types: [opened, reopened, synchronize]
@@ -29,32 +29,31 @@ jobs:
         run: |
           elan default leanprover/lean4:stable
           
-          # 既存のlakefileがなければ作成
+          # 既存のlakefileがなければ作成（上書き防止）
           if [ ! -f lakefile.lean ]; then
-            cat << 'EOF' > lakefile.lean
-import Lake
-open Lake DSL
-
-package meta_axiom
-
-require mathlib from git "https://github.com/leanprover-community/mathlib4"
-
-lean_lib MetaAxioms
-EOF
+            cat << EOF > lakefile.lean
+          import Lake
+          open Lake DSL
+          package meta_axiom
+          require mathlib from git "https://github.com/leanprover-community/mathlib4"
+          lean_lib MetaAxioms
+          EOF
           fi
           
-          # Mathlib更新
           lake update
 
-      - name: Build dependencies and project
+      - name: Get Mathlib Cache
         run: |
-          # 依存関係のみ先にビルドしてキャッシュ活用
-          lake build --only-deps
-          lake build
+          # Mathlibのビルド時間を短縮
+          lake exe cache get || true
+
+      - name: Build
+        run: lake build
 
   auto-merge:
     name: Auto Merge if CI Green
     needs: build
+    # PRイベントの時のみ実行。条件を絞りすぎず確実に発動させる
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
@@ -67,9 +66,10 @@ EOF
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 pull_number: context.payload.pull_request.number,
-                merge_method: "squash"  // 必要に応じて "merge" に変更可
+                merge_method: "squash"
               });
               console.log("Merge Successful!");
             } catch (e) {
               console.log("Merge skipped or failed: ", e.message);
+              // 権限設定が必要な場合はログに出力
             }
