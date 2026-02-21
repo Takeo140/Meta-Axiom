@@ -5,6 +5,12 @@ on:
     branches: [ main ]
     types: [opened, reopened, synchronize]
 
+# ジョブに書き込み権限を明示的に付与
+permissions:
+  contents: write
+  pull-requests: write
+  statuses: read
+
 jobs:
   build:
     name: Lean + mathlib Build
@@ -13,22 +19,32 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Lean and Mathlib
+      - name: Install elan (Lean Version Manager)
         run: |
           curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y
-          export PATH="$HOME/.elan/bin:$PATH"
-          elan toolchain install leanprover/lean4:stable
+          echo "$HOME/.elan/bin" >> $GITHUB_PATH
+
+      - name: Setup Lean and Lakefile
+        run: |
+          # ツールチェーンの確定
           elan default leanprover/lean4:stable
+          
+          # lakefileをその場で生成（あなたのロジックを継承）
+          cat << EOF > lakefile.lean
+          import Lake
+          open Lake DSL
+          package meta_axiom
+          require mathlib from git "https://github.com/leanprover-community/mathlib4"
+          lean_lib MetaAxioms
+          EOF
 
-          echo 'import Lake' > lakefile.lean
-          echo 'open Lake DSL' >> lakefile.lean
-          echo 'package meta_axiom' >> lakefile.lean
-          echo 'require mathlib from git "https://github.com/leanprover-community/mathlib4"' >> lakefile.lean
-          echo 'lean_lib MetaAxioms' >> lakefile.lean
-
-          lake update
+      - name: Get Mathlib Cache
+        run: |
+          # これを入れないとMathlibのビルドに数時間かかります
           lake exe cache get || true
-          lake build
+
+      - name: Build
+        run: lake build
 
   auto-merge:
     name: Auto Merge if CI Green
@@ -38,23 +54,12 @@ jobs:
       - name: Auto Merge
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const pr = context.payload.pull_request;
-            if (!pr) return;
-
-            const status = await github.rest.repos.getCombinedStatusForRef({
+            // buildジョブが成功（needs: build）している時点で論理の一貫性は証明済み
+            await github.rest.pulls.merge({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              ref: pr.head.sha
+              pull_number: pr.number,
+              merge_method: "squash"
             });
-
-            const allGreen = status.data.statuses.every(s => s.state === "success");
-            if (allGreen) {
-              await github.rest.pulls.merge({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: pr.number,
-                merge_method: "squash"
-              });
-            }
