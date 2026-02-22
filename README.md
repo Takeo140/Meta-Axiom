@@ -2,7 +2,7 @@
 
 [![Lean 4 CI](https://img.shields.io/badge/Formal_Proof-Lean_4-green.svg)](https://leanprover.github.io/)
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC_BY_4.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
-
+[<image-card alt="CI" src="https://github.com/Takeo140/Meta-Axiom/actions/workflows/ci.yml/badge.svg" ></image-card>](https://github.com/Takeo140/Meta-Axiom/actions)
 ## Overview
 
 This repository provides a formal Lean 4 formalization of the **Four Meta-Axioms** proposed in the paper:
