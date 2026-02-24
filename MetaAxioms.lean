@@ -9,39 +9,33 @@ namespace MetaAxioms
 
 /-!
 # Meta-Axioms of the Universe
-Author: Takeo Yamamoto
-License: CC BY 4.0
-
-1. Axiom 1: Extremum Principle (Optimization)
-2. Axiom 2: Topological Space (Boundary Conditions)
-3. Axiom 3: Logical Consistency (Existence Constraint)
-4. Axiom 4: Hierarchical Structure (Emergence)
+Implementation by Takeo Yamamoto
 -/
 
--- Axiom 2: The container of reality
+-- Axiom 2: Topological Space (The Space $X$)
 variable {X : Type} [TopologicalSpace X]
 
--- Axiom 1: Selection of the optimal state
+-- Axiom 1: Extremum Principle (Function $L$ and point $x_0$)
 def IsMinimal (L : X → ℝ) (x₀ : X) : Prop :=
   ∀ x, L x₀ ≤ L x
 
--- Axiom 3: Condition for non-contradictory existence
+-- Axiom 3: Logical Consistency (System $F$ and Constraint $C$)
 def IsConsistent (C : (X → ℝ) → Prop) (F : X → ℝ) : Prop :=
   C F
 
--- Axiom 4: Integration of micro-states into macro-behavior
+-- Axiom 4: Hierarchical Structure (Integration of $\iota$)
 variable {ι : Type} [Fintype ι]
 def MacroFunction (w : ι → ℝ) (Fmicro : ι → X → ℝ) : X → ℝ :=
   fun x => ∑ i, w i * Fmicro i x
 
--- The Integrated Cosmic Framework
+-- Integrated Cosmic Framework Structure
 structure IntegratedFramework (X : Type) [TopologicalSpace X] where
-  L : X → ℝ           -- Loss / Action Functional
-  F : X → ℝ           -- System state
-  C : (X → ℝ) → Prop  -- Global consistency constraints
-  consistent : C F    -- Requirement: Existence must be consistent
+  L : X → ℝ           -- Loss Function / Action
+  F : X → ℝ           -- Observed State
+  C : (X → ℝ) → Prop  -- Logical Constraints
+  consistent : C F    -- Essential Proof of Existence
 
--- The Realization of Phenomenon
+-- Conceptual Realization (The moment Theory meets Reality)
 def IsRealization {X : Type} [TopologicalSpace X] 
   (M : IntegratedFramework X) (x₀ : X) : Prop :=
   IsMinimal M.L x₀ ∧ M.C M.F
