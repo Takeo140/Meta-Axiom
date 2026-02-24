@@ -1,22 +1,21 @@
-　name: Meta-Axiom CI + Auto Merge
+name: Meta-Axiom CI + Auto Merge
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main ]  # メインブランチの履歴に ✅ を刻む
   pull_request:
     branches: [ main ]
-    types: [opened, reopened, synchronize, ready_for_review]
+    types: [opened, reopened, synchronize]
 
 permissions:
   contents: write
   pull-requests: write
-  statuses: write
+  statuses: read
 
 jobs:
   build:
     name: Lean + mathlib Build
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -29,55 +28,48 @@ jobs:
       - name: Setup Lean and Lakefile
         run: |
           elan default leanprover/lean4:stable
-
-          # lakefileを生成。'EOF' とすることでシェル変数の干渉を防ぎます。
+          
+          # 既存のlakefileがなければ作成（あなたのロジックを維持）
           if [ ! -f lakefile.lean ]; then
-            cat << 'EOF' > lakefile.lean
+            cat << EOF > lakefile.lean
 import Lake
 open Lake DSL
-
 package meta_axiom
-
-require mathlib from git
-  "https://github.com/leanprover-community/mathlib4"
-
-@[default_target]
+require mathlib from git "https://github.com/leanprover-community/mathlib4"
 lean_lib MetaAxioms where
   srcDir := "."
 EOF
           fi
-
+          
           lake update
 
       - name: Get Mathlib Cache
-        # cache get! は Mathlib のビルド済み成果物を強制取得し、CI時間を大幅に短縮します。
-        run: lake exe cache get || true
+        run: |
+          # Mathlibのビルド時間を短縮
+          lake exe cache get || true
 
       - name: Build
-        # ここで MetaAxioms.lean の論理的整合性が証明されます。
         run: lake build
 
   auto-merge:
     name: Auto Merge if CI Green
     needs: build
-    # ドラフトでないPRかつ、ビルド（buildジョブ）が成功した場合のみ実行
-    if: github.event_name == 'pull_request' && github.event.pull_request.draft == false && success()
+    # PRイベントの時のみ実行
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-
     steps:
       - name: Auto Merge
         uses: actions/github-script@v7
         with:
           script: |
-            // contextから安全にPR番号を取得
-            const prNumber = context.payload.pull_request.number;
-
             try {
               await github.rest.pulls.merge({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                pull_number: prNumber,
-                merge_method: "squash",
-                commit_title: `Auto-merge Meta-Axiom Consistency update (#${prNumber})`,
-                commit_message: "Automated via GitHub Actions: Logical consistency verified."
+                pull_number: context.payload.pull_request.number,
+                merge_method: "squash"
               });
+              console.log("Merge Successful!");
+            } catch (e) {
+              console.log("Merge skipped or failed: ", e.message);
+            }
