@@ -2,20 +2,21 @@ name: Meta-Axiom CI + Auto Merge
 
 on:
   push:
-    branches: [ main ]  # メインブランチの履歴に ✅ を刻む
+    branches: [ main ]
   pull_request:
     branches: [ main ]
-    types: [opened, reopened, synchronize]
+    types: [opened, reopened, synchronize, ready_for_review]
 
 permissions:
   contents: write
   pull-requests: write
-  statuses: write # status権限を明示
+  statuses: write
 
 jobs:
   build:
     name: Lean + mathlib Build
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,26 +29,27 @@ jobs:
       - name: Setup Lean and Lakefile
         run: |
           elan default leanprover/lean4:stable
-          
-          # 既存のlakefileがなければ作成（あなたのオリジナル・ロジック）
+
           if [ ! -f lakefile.lean ]; then
-            cat << EOF > lakefile.lean
+            cat << 'EOF' > lakefile.lean
 import Lake
 open Lake DSL
+
 package meta_axiom
-require mathlib from git "https://github.com/leanprover-community/mathlib4"
+
+require mathlib from git
+  "https://github.com/leanprover-community/mathlib4"
+
 @[default_target]
 lean_lib MetaAxioms where
   srcDir := "."
 EOF
           fi
-          
+
           lake update
 
       - name: Get Mathlib Cache
-        run: |
-          # Mathlibのビルド時間を短縮（これがないとCIがタイムアウトします）
-          lake exe cache get || true
+        run: lake exe cache get! || true
 
       - name: Build
         run: lake build
@@ -55,22 +57,25 @@ EOF
   auto-merge:
     name: Auto Merge if CI Green
     needs: build
-    # PRイベントの時のみ実行
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && github.event.pull_request.draft == false && github.event.pull_request.state == 'open'
     runs-on: ubuntu-latest
+
     steps:
       - name: Auto Merge
         uses: actions/github-script@v7
         with:
           script: |
+            const pr = context.payload.pull_request;
+
             try {
               await github.rest.pulls.merge({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                pull_number: context.payload.pull_request.number,
+                pull_number: pr.number,
                 merge_method: "squash"
               });
+
               console.log("Merge Successful!");
             } catch (e) {
-              console.log("Merge skipped or failed: ", e.message);
+              console.log("Merge skipped or failed:", e.message);
             }
