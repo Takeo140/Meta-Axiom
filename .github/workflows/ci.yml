@@ -2,7 +2,7 @@ name: Meta-Axiom CI + Auto Merge
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main ]  # メインブランチの履歴に ✅ を刻む
   pull_request:
     branches: [ main ]
     types: [opened, reopened, synchronize]
@@ -10,11 +10,11 @@ on:
 permissions:
   contents: write
   pull-requests: write
-  statuses: write
+  statuses: write # status権限を明示
 
 jobs:
   build:
-    name: Lean Build
+    name: Lean + mathlib Build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -25,17 +25,52 @@ jobs:
           curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y
           echo "$HOME/.elan/bin" >> $GITHUB_PATH
 
-      - name: Build Setup
+      - name: Setup Lean and Lakefile
         run: |
           elan default leanprover/lean4:stable
           
-          # 手動で lakefile.lean を生成（確実性を優先）
-          printf 'import Lake\nopen Lake DSL\n\npackage meta_axiom\n\nrequire mathlib from git "https://github.com/leanprover-community/mathlib4"\n\n@[default_target]\nlean_lib MetaAxioms where\n  srcDir := "."\n' > lakefile.lean
+          # 既存のlakefileがなければ作成（あなたのオリジナル・ロジック）
+          if [ ! -f lakefile.lean ]; then
+            cat << EOF > lakefile.lean
+import Lake
+open Lake DSL
+package meta_axiom
+require mathlib from git "https://github.com/leanprover-community/mathlib4"
+@[default_target]
+lean_lib MetaAxioms where
+  srcDir := "."
+EOF
+          fi
           
-          # 依存関係のダウンロードとキャッシュ取得
           lake update
-          lake exe cache get || echo "Cache not found, building from source (this may be slow)"
-          
-      - name: Run Lake Build
-        # MetaAxioms.lean の論理的整合性を検証
+
+      - name: Get Mathlib Cache
+        run: |
+          # Mathlibのビルド時間を短縮（これがないとCIがタイムアウトします）
+          lake exe cache get || true
+
+      - name: Build
         run: lake build
+
+  auto-merge:
+    name: Auto Merge if CI Green
+    needs: build
+    # PRイベントの時のみ実行
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Auto Merge
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              await github.rest.pulls.merge({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.payload.pull_request.number,
+                merge_method: "squash"
+              });
+              console.log("Merge Successful!");
+            } catch (e) {
+              console.log("Merge skipped or failed: ", e.message);
+            }
