@@ -25,31 +25,18 @@ jobs:
           curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y
           echo "$HOME/.elan/bin" >> $GITHUB_PATH
 
-      - name: Build Setup
+      - name: Setup Project
         run: |
           elan default leanprover/lean4:stable
+          
+          # 確実に lakefile.lean を生成する（インデントを削除してベタ書き）
+          printf 'import Lake\nopen Lake DSL\n\npackage meta_axiom\n\nrequire mathlib from git "https://github.com/leanprover-community/mathlib4"\n\n@[default_target]\nlean_lib MetaAxioms where\n  srcDir := "."\n' > lakefile.lean
+          
+          # 中身が正しく書き込まれたか確認（デバッグ用）
+          cat lakefile.lean
+
           lake update
-          # Mathlibのビルド済みバイナリを強制取得（エラー回避の要）
           lake exe cache get || echo "Cache fetch failed, but continuing..."
           
       - name: Run Lake Build
-        # MetaAxioms.lean の論理整合性を検証
         run: lake build
-
-  auto-merge:
-    name: Auto Merge
-    needs: build
-    # あなた（オーナー）がPRを作成し、ビルドが通った場合のみマージ
-    if: github.event_name == 'pull_request' && github.actor == github.repository_owner
-    runs-on: ubuntu-latest
-    steps:
-      - name: Merge PR
-        uses: actions/github-script@v7
-        with:
-          script: |
-            github.rest.pulls.merge({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.payload.pull_request.number,
-              merge_method: "squash"
-            })
