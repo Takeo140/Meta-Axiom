@@ -8,28 +8,24 @@ open BigOperators
 namespace MetaAxioms
 
 /-!
-Meta-Axioms as a Mathematical-Philosophical Framework
-Prop-based formulation
+# Meta-Axioms Framework
+A Prop-based formulation for the "OS of the Universe."
 -/
 
-/- Meta-Axiom 2: Topological Space -/
-
+-- Axiom 2: Topological Space (The Boundary of Reality)
 variable {X : Type} [TopologicalSpace X]
 
-/- Meta-Axiom 1: Extremum Principle -/
-
+-- Axiom 1: Extremum Principle (The Path of Least Action/Loss)
 def IsMinimal (L : X → ℝ) (x₀ : X) : Prop :=
   ∀ x, L x₀ ≤ L x
 
-/- Meta-Axiom 3: Logical Consistency (Prop version) -/
-
+-- Axiom 3: Logical Consistency (The Constraint of Existence)
 def IsConsistent
   (C : (X → ℝ) → Prop)
   (F : X → ℝ) : Prop :=
   C F
 
-/- Meta-Axiom 4: Hierarchical Structure -/
-
+-- Axiom 4: Hierarchical Structure (Emergence of the Macro)
 variable {ι : Type} [Fintype ι]
 
 def MacroFunction
@@ -38,16 +34,14 @@ def MacroFunction
   X → ℝ :=
   fun x => ∑ i, w i * Fmicro i x
 
-/- Integrated Conceptual Framework -/
-
+-- Integrated Conceptual Framework
 structure IntegratedFramework (X : Type) [TopologicalSpace X] where
-  L : X → ℝ
-  F : X → ℝ
-  C : (X → ℝ) → Prop
-  consistent : C F
+  L : X → ℝ           -- Loss function or Action functional
+  F : X → ℝ           -- State of the system
+  C : (X → ℝ) → Prop  -- Consistency constraint (e.g., Einstein Eqs)
+  consistent : C F    -- The requirement that existence is non-contradictory
 
-/- Conceptual Realization -/
-
+-- Conceptual Realization (The manifestation of the Physical World)
 def IsRealization
   {X : Type} [TopologicalSpace X]
   (M : IntegratedFramework X)
