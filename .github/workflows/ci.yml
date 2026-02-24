@@ -25,18 +25,17 @@ jobs:
           curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y
           echo "$HOME/.elan/bin" >> $GITHUB_PATH
 
-      - name: Setup Project
+      - name: Build Setup
         run: |
           elan default leanprover/lean4:stable
           
-          # 確実に lakefile.lean を生成する（インデントを削除してベタ書き）
+          # 手動で lakefile.lean を生成（確実性を優先）
           printf 'import Lake\nopen Lake DSL\n\npackage meta_axiom\n\nrequire mathlib from git "https://github.com/leanprover-community/mathlib4"\n\n@[default_target]\nlean_lib MetaAxioms where\n  srcDir := "."\n' > lakefile.lean
           
-          # 中身が正しく書き込まれたか確認（デバッグ用）
-          cat lakefile.lean
-
+          # 依存関係のダウンロードとキャッシュ取得
           lake update
-          lake exe cache get || echo "Cache fetch failed, but continuing..."
+          lake exe cache get || echo "Cache not found, building from source (this may be slow)"
           
       - name: Run Lake Build
+        # MetaAxioms.lean の論理的整合性を検証
         run: lake build
