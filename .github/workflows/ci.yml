@@ -1,4 +1,4 @@
-name: Meta-Axiom CI + Auto Merge
+　name: Meta-Axiom CI + Auto Merge
 
 on:
   push:
