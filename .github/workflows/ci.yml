@@ -2,7 +2,7 @@ name: Meta-Axiom CI + Auto Merge
 
 on:
   push:
-    branches: [ main ]  # メインブランチの履歴に ✅ を刻む
+    branches: [ main ]  
   pull_request:
     branches: [ main ]
     types: [opened, reopened, synchronize]
