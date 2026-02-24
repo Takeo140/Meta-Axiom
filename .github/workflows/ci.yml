@@ -81,8 +81,3 @@ EOF
                 commit_title: `Auto-merge Meta-Axiom Consistency update (#${prNumber})`,
                 commit_message: "Automated via GitHub Actions: Logical consistency verified."
               });
-
-              console.log("Merge Successful! The universe is updated.");
-            } catch (e) {
-              console.log("Merge skipped or failed:", e.message);
-            }
