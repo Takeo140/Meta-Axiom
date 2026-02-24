@@ -2,7 +2,7 @@ name: Meta-Axiom CI + Auto Merge
 
 on:
   push:
-    branches: [ main ]  
+    branches: [ main ]  # メインブランチの履歴に ✅ を刻む
   pull_request:
     branches: [ main ]
     types: [opened, reopened, synchronize]
@@ -24,37 +24,33 @@ jobs:
         run: |
           curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y
           echo "$HOME/.elan/bin" >> $GITHUB_PATH
-
       - name: Setup Lean and Lakefile
         run: |
           elan default leanprover/lean4:stable
           
-          # 既存のlakefileがなければ作成（あなたのロジックを維持）
+          # 既存のlakefileがなければ作成（上書き防止）
           if [ ! -f lakefile.lean ]; then
             cat << EOF > lakefile.lean
-import Lake
-open Lake DSL
-package meta_axiom
-require mathlib from git "https://github.com/leanprover-community/mathlib4"
-lean_lib MetaAxioms where
-  srcDir := "."
-EOF
+          import Lake
+          open Lake DSL
+          package meta_axiom
+          require mathlib from git "https://github.com/leanprover-community/mathlib4"
+          lean_lib MetaAxioms
+          EOF
           fi
           
           lake update
-
       - name: Get Mathlib Cache
         run: |
           # Mathlibのビルド時間を短縮
           lake exe cache get || true
-
       - name: Build
         run: lake build
 
   auto-merge:
     name: Auto Merge if CI Green
     needs: build
-    # PRイベントの時のみ実行
+    # PRイベントの時のみ実行。条件を絞りすぎず確実に発動させる
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
@@ -72,4 +68,5 @@ EOF
               console.log("Merge Successful!");
             } catch (e) {
               console.log("Merge skipped or failed: ", e.message);
+              // 権限設定が必要な場合はログに出力
             }
