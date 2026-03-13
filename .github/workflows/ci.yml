@@ -1,34 +1,26 @@
-name: Meta-Axiom CI + Auto Merge
+name: Meta-Axiom CI
 
 on:
   push:
-    branches: [ main ]  # メインブランチの履歴に ✅ を刻む
+    branches: [ main ]
   pull_request:
     branches: [ main ]
-    types: [opened, reopened, synchronize]
-
-permissions:
-  contents: write
-  pull-requests: write
-  statuses: read
 
 jobs:
   build:
     name: Lean + mathlib Build
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Install elan
         run: |
           curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y
           echo "$HOME/.elan/bin" >> $GITHUB_PATH
-      - name: Setup Lean and Lakefile
+
+      - name: Setup lakefile
         run: |
           elan default leanprover/lean4:stable
-          
-          # 既存のlakefileがなければ作成（上書き防止）
           if [ ! -f lakefile.lean ]; then
             cat << EOF > lakefile.lean
           import Lake
@@ -38,35 +30,10 @@ jobs:
           lean_lib MetaAxioms
           EOF
           fi
-          
           lake update
-      - name: Get Mathlib Cache
-        run: |
-          # Mathlibのビルド時間を短縮
-          lake exe cache get || true
+
+      - name: Mathlib cache
+        run: lake exe cache get || true
+
       - name: Build
         run: lake build
-
-  auto-merge:
-    name: Auto Merge if CI Green
-    needs: build
-    # PRイベントの時のみ実行。条件を絞りすぎず確実に発動させる
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Auto Merge
-        uses: actions/github-script@v7
-        with:
-          script: |
-            try {
-              await github.rest.pulls.merge({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: context.payload.pull_request.number,
-                merge_method: "squash"
-              });
-              console.log("Merge Successful!");
-            } catch (e) {
-              console.log("Merge skipped or failed: ", e.message);
-              // 権限設定が必要な場合はログに出力
-            }
