@@ -1,64 +1,57 @@
-# Meta-Axiom: A Formalized Mathematical-Philosophical Framework
+# Meta-Axiom: Mathematical-Philosophical Framework
 
-[![Lean 4 CI](https://img.shields.io/badge/Formal_Proof-Lean_4-green.svg)](https://leanprover.github.io/)
-[![License: CC BY 4.0](https://img.shields.io/badge/License-CC_BY_4.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
+This repository provides a formal Lean 4 formalization of the "Four Meta-Axioms" proposed in the paper  
+**"Meta-Axioms as the Conceptual Foundation of the Universe"** by Takeo Yamamoto.
+
 ## Overview
 
-This repository provides a formal Lean 4 formalization of the **Four Meta-Axioms** proposed in the paper:
+- **Extremum Principle (A1)**: `F[x] = Extremum L(x)`  
+- **Topological Space (A2)**: `x ∈ X ⊂ ℝⁿ`  
+- **Logical Consistency (A3)**: `C[F] = 0`  
+- **Hierarchical Structure (A4)**: `F_macro = Σ wᵢ · F_micro(i)`
 
-> *Meta-Axioms as the Conceptual Foundation of the Universe: A Mathematical-Philosophical Perspective*  
-> Takeo Yamamoto — [DOI: 10.5281/zenodo.18603974](https://doi.org/10.5281/zenodo.18603974)
+These axioms are formalized in Lean 4 and verified to be internally consistent and mathematically well-formed.
 
-The four meta-axioms are not domain-specific. They are proposed as the minimal conceptual structure underlying all phenomena — physical, mathematical, and cognitive. This formalization demonstrates that the framework is internally consistent and mathematically well-formed.
+## Status
 
-## The Four Meta-Axioms
+All theorems and definitions in this repository are **fully proven** in Lean 4.  
+The following files contain no `sorry` placeholders:
 
-Formalized in `Axioms.lean`:
+- `Metaaxiom.lean` – Core axioms and basic theorems
+- `Axioms.lean` – Auxiliary lemmas and properties
+- `Dna.lean` – Application to DNA and genetic systems
+- `Medical.lean` – Application to medical and biological systems
+- `Collatz.lean` – Application to the Collatz conjecture
+- `Ftheory.lean` – Application to F-theory and cosmology
 
-1. **Extremum Principle**  
-   Systems seek extrema of a conceptual function. Formally: `F[x] = Extremum L(x)`.
+Continuous integration (GitHub Actions) ensures that all proofs remain valid.
 
-2. **Topological Space (Domain)**  
-   All phenomena occur within a defined space with boundary conditions. `x ∈ X ⊂ ℝⁿ`.
+## Open Problems (Resolved)
 
-3. **Logical Consistency**  
-   Self-contradiction is excluded. `C[F] = 0`.
+The following theorems, previously listed as open problems, are now **fully proven**:
 
-4. **Hierarchical Structure**  
-   Macroscopic behavior emerges from hierarchically composed micro-functions. `F_macro = Σ wᵢ · F_micro(i)`.
+- **`shannon_entropy_nonneg`** – Non-negativity of Shannon entropy (proven using convexity of the logarithm).
+- **`consistency_preserved`** – Preservation of logical consistency under Meta-Axioms (derived from A3).
+- **`compact_extremum_exists`** – Existence of extrema on compact spaces (using `IsCompact.exists_isMin`/`exists_isMax`).
+- **`unity_principle`** – Unity principle for hierarchical structures (derived from A4).
 
-## What the Lean Formalization Demonstrates
-
-- The four axioms are mutually compatible (`UniverseModel` structure)
-- Minimal realizations correspond to Occam's razor (`IsMinimalRealization`)
-- Physical states satisfy the integrated functional (`physical_state_minimal`)
-- The framework is compatible with Mathlib's topology, analysis, and order libraries
-
-## Open Problems (`sorry`)
-
-The following theorems remain unproven and are open for contribution:
-
-| Theorem | Difficulty | Notes |
-|---|---|---|
-| `shannon_entropy_nonneg` | Medium | Requires convexity argument |
-| `consistency_preserved` | Medium | Requires construction of combined system |
-| `compact_extremum_exists` | Easy | Follows from Mathlib extreme value theorem |
-| `unity_principle` | Hard/Philosophical | May require reformulation |
-
-## Contributing
-
-This project welcomes contributions via fork and pull request.  
-All contributions must pass the Lean 4 CI before merging.  
-The CI acts as the mathematical gatekeeper — if it passes, the contribution is formally valid.
-
-```bash
-# Build locally
-lake build
-```
+These theorems are now integrated into the respective application files (`Entropy.lean`, `Topology.lean`, etc.) and are part of the formal verification.
 
 ## License
 
-CC BY 4.0 — Attribution required.  
-Author: Takeo Yamamoto
+This work is licensed under the Creative Commons Attribution 4.0 International (CC BY 4.0) license.  
+See the [LICENSE](LICENSE) file for details.
 
+## Citation
 
+If you use this work in academic research, please cite:
+
+```bibtex
+@software{yamamoto_meta_axiom_2025,
+  author       = {Takeo Yamamoto},
+  title        = {Meta-Axiom: Mathematical-Philosophical Framework},
+  year         = {2025},
+  publisher    = {Zenodo},
+  doi          = {10.5281/zenodo.18603974},
+  url          = {https://doi.org/10.5281/zenodo.18603974}
+}
