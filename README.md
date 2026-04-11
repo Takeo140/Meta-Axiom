@@ -1,72 +1,51 @@
 # Meta-Axiom: A Mathematical-Philosophical Framework for Universal Optimization
 
-[](https://leanprover.github.io/)
-[](https://creativecommons.org/licenses/by/4.0/)
-[](https://www.google.com/url?sa=E&source=gmail&q=https://doi.org/10.5281/zenodo.18603974)
+[![Lean 4](https://img.shields.io/badge/Lean-4-orange.svg)](https://leanprover.github.io/)
+[![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18603974.svg)](https://doi.org/10.5281/zenodo.18603974)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/TakeoYamamoto/Meta-Axiom/graphs/commit-activity)
 
-## Abstract
+This repository provides a formal Lean 4 formalization of the **"Four Meta-Axioms"** (collectively referred to as **F-Theory**) proposed by **Takeo Yamamoto**.
 
-This repository provides the formal Lean 4 implementation of the **"Four Meta-Axioms"** (collectively referred to as **F-Theory**), a theoretical framework proposed by Takeo Yamamoto (Yamamoto Yoshu).
+## Overview
 
-The goal of this project is to establish a rigorous, computable foundation for the conceptual laws of the universe, bridging the gap between abstract philosophy and formal mathematics. By utilizing the **Curry-Howard correspondence**, every theorem in this framework is verified to be logically consistent and free of contradictions.
+The framework establishes a rigorous foundation for the conceptual laws of the universe through four fundamental pillars:
 
-## The Four Meta-Axioms
+- **Extremum Principle (A1)**: $F[x] = \text{Extremum } L(x)$
+- **Topological Space (A2)**: $x \in X \subset \mathbb{R}^n$
+- **Logical Consistency (A3)**: $C[F] = 0$
+- **Hierarchical Structure (A4)**: $F_{macro} = \sum w_i \cdot F_{micro}(i)$
 
-The framework is built upon four fundamental pillars, formalized as mathematical constraints:
+These axioms are formalized in Lean 4 and verified to be internally consistent and mathematically well-formed via the **Curry-Howard correspondence**.
 
-1.  **Extremum Principle (A1)**: $F[x] = \text{Extremum } L(x)$
-      * Systems naturally converge to states that minimize or maximize a fundamental Lagrangian-like functional.
-2.  **Topological Space (A2)**: $x \in X \subset \mathbb{R}^n$
-      * All system states are defined within a structured, continuous mathematical space.
-3.  **Logical Consistency (A3)**: $C[F] = 0$
-      * The meta-axiom itself must satisfy the condition of internal logical non-contradiction.
-4.  **Hierarchical Structure (A4)**: $F_{macro} = \sum w_i \cdot F_{micro}(i)$
-      * Macro-level phenomena emerge as an optimized, weighted summation of micro-level functional states.
+## Status: Fully Proven
 
-## Verification Status: Fully Proven
+All theorems and definitions in this repository are **fully proven**. The following files contain no `sorry` placeholders, and the proof state is verified by continuous integration (GitHub Actions).
 
-This repository is dedicated to high-fidelity formal verification. As of the current version, **all core definitions and theorems are fully proven.**
+- `Metaaxiom.lean` – Core axioms and consistency proofs.
+- `Axioms.lean` – Auxiliary lemmas and mathematical properties.
+- `Ftheory.lean` – Application to F-theory and cosmology.
+- `Collatz.lean` – Application to the structural analysis of the Collatz conjecture.
+- `Dna.lean` – Application to genetic systems and information theory.
+- `Medical.lean` – Application to biological systems and homeostatic optimization.
 
-  * **Zero "sorry" placeholders**: Every proof is complete and checked by the Lean 4 compiler.
-  * **Continuous Integration**: GitHub Actions ensures that every commit maintains the integrity of the proof state.
+## Resolved Proofs
 
-### Project Structure
+The following properties are integrated into the formal verification:
 
-| File | Description |
-| :--- | :--- |
-| `Metaaxiom.lean` | Definition of the Four Meta-Axioms and core consistency proofs. |
-| `Axioms.lean` | Formalization of auxiliary lemmas and mathematical properties. |
-| `Ftheory.lean` | Application of Meta-Axioms to cosmology and general F-theory. |
-| `Collatz.lean` | Formal verification of structural properties related to the Collatz conjecture. |
-| `Dna.lean` | Analysis of genetic information systems through the lens of optimization. |
-| `Medical.lean` | Modeling biological systems and homeostatic optimization. |
-
-## Resolved Proofs (Key Milestones)
-
-The following significant mathematical properties have been formally verified within this framework:
-
-  * **Existence of Compact Extrema**: Proven using `IsCompact.exists_isMin` and `exists_isMax`, satisfying **A1** and **A2**.
-  * **Non-negativity of Shannon Entropy**: A rigorous proof of $H(X) \ge 0$ using the convexity of the logarithm, integrated into the informational analysis of **A4**.
-  * **Consistency Preservation**: Formal derivation that logical consistency ($C[F] = 0$) is invariant under the proposed transformation rules (**A3**).
-  * **Unity Principle**: A mathematical derivation of the convergence of hierarchical structures.
-
-## Usage for AI Science
-
-This repository is designed to be **AI-readable**. We encourage the use of these formalized axioms in:
-
-  * Automated theorem proving (ATP)
-  * AI-driven scientific discovery
-  * Formal verification of economic and physical models
+- **`shannon_entropy_nonneg`**: Non-negativity of Shannon entropy (proven via log-convexity).
+- **`consistency_preserved`**: Invariance of logical consistency under Meta-Axioms (derived from **A3**).
+- **`compact_extremum_exists`**: Existence of extrema on compact spaces (using `IsCompact.exists_isMin`/`exists_isMax`).
+- **`unity_principle`**: Formal derivation of hierarchical convergence (derived from **A4**).
 
 ## License
 
-This work is licensed under the **Creative Commons Attribution 4.0 International (CC BY 4.0)** license. You are free to share and adapt this work for any purpose, even commercially, provided that appropriate credit is given to the author.
+This work is licensed under the **Creative Commons Attribution 4.0 International (CC BY 4.0)** license.  
+See the [LICENSE](LICENSE) file for details.
 
 **Author:** Takeo Yamamoto 
 
 ## Citation
-
-If you utilize this framework in academic research or AI development, please cite it as follows:
 
 ```bibtex
 @software{yamamoto_meta_axiom_2025,
@@ -75,6 +54,5 @@ If you utilize this framework in academic research or AI development, please cit
   year         = {2025},
   publisher    = {Zenodo},
   doi          = {10.5281/zenodo.18603974},
-  url          = {https://doi.org/10.5281/zenodo.18603974}
+  url          = {[https://doi.org/10.5281/zenodo.18603974](https://doi.org/10.5281/zenodo.18603974)}
 }
-```
