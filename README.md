@@ -42,6 +42,8 @@ These theorems are now integrated into the respective application files (`Entrop
 This work is licensed under the Creative Commons Attribution 4.0 International (CC BY 4.0) license.  
 See the [LICENSE](LICENSE) file for details.
 
+Author:Takeo Yamamoto
+
 ## Citation
 
 If you use this work in academic research, please cite:
