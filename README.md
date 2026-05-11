@@ -1,7 +1,7 @@
 # Meta-Axiom: A Mathematical-Philosophical Framework for Universal Optimization
 
 [![Lean 4](https://img.shields.io/badge/Lean-4-orange.svg)](https://leanprover.github.io/)
-LICENSE approach2.0
+LICENSE Apache2.0
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18603974.svg)](https://doi.org/10.5281/zenodo.18603974)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/TakeoYamamoto/Meta-Axiom/graphs/commit-activity)
 
@@ -40,7 +40,7 @@ The following properties are integrated into the formal verification:
 
 ## License
 
-This work is licensed under the **approach2.0** license.  
+This work is licensed under the **Apache2.0** license.  
 See the [LICENSE](LICENSE) file for details.
 
 **Author:** Takeo Yamamoto 
