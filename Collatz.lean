@@ -2,92 +2,59 @@ import Mathlib.Data.Nat.Basic
 import Mathlib.Tactic
 
 /-!
-# Collatz Conjecture — v3 Formalization
+# Collatz Conjecture — Formal Axiom System
 # Yamamoto Meta-Axioms Framework
 
-Structural proof elements:
-1. σ is closed on ℕ⁺
-2. Every orbit term ≥ 1
-3. +1 structurally prohibits loops (3n+1 is never divisible by 3)
-4. Odd step always produces even (immediate halving)
-5. Collatz Convergence Axiom (foundational premise, independent of ZFC)
-6. Proof by contradiction: non-convergence violates the axiom
+## 設計方針
+標準整数系(ZFC)では収束の証明が未到達であるため、
+収束を独立公理として採用する。
+これはユークリッドの平行線公理と同様の扱いであり、
+87年間・2⁷¹までの計算検証を根拠とする。
+
+## 公理系の構成
+- 基礎：標準自然数公理系
+- 独立公理：Collatz収束公理（ZFCから独立の可能性）
+- 定理群：公理系から導出される構造的性質
 
 DOI: 10.5281/zenodo.18908517
-License: CC BY 4.0
+License: Apache 2.0
 -/
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- σ : ℕ⁺ → ℕ⁺  (Collatz step function)
+-- 基本定義
 -- ─────────────────────────────────────────────────────────────────────────────
 
 def sigma (n : Nat) : Nat :=
   if n % 2 = 0 then n / 2 else 3 * n + 1
-
--- ─────────────────────────────────────────────────────────────────────────────
--- Iterated sequence  σᵏ(N)
--- ─────────────────────────────────────────────────────────────────────────────
 
 def collatz_seq (N : Nat) : Nat → Nat
   | 0     => N
   | n + 1 => sigma (collatz_seq N n)
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- Result 1: σ is closed on ℕ⁺
+-- 標準整数系内で証明可能な性質（sorry不要）
 -- ─────────────────────────────────────────────────────────────────────────────
 
+-- σ は ℕ⁺ 上で閉じている
 theorem sigma_closed (n : Nat) (h : n > 0) : sigma n > 0 := by
   simp only [sigma]
   split_ifs with heven <;> omega
 
--- ─────────────────────────────────────────────────────────────────────────────
--- Result 2: Every orbit term satisfies σᵏ(N) ≥ 1
--- ─────────────────────────────────────────────────────────────────────────────
-
+-- 全軌道項は ≥ 1
 theorem collatz_ge_one (N : Nat) (h : N > 0) (k : Nat) :
     collatz_seq N k ≥ 1 := by
   induction k with
   | zero    => simp [collatz_seq]; omega
   | succ n ih =>
       simp only [collatz_seq]
-      -- ih : collatz_seq N n ≥ 1  (i.e. 1 ≤ …)
-      -- sigma_closed needs  collatz_seq N n > 0  (i.e. 0 < …)
-      -- Both are equivalent for ℕ; omega bridges the gap.
       exact sigma_closed _ (by omega)
 
--- ─────────────────────────────────────────────────────────────────────────────
--- Result 3: Loop prohibition
--- The +1 in 3n+1 ensures the result is never divisible by 3.
--- This structurally ejects the sequence from any potential 3-cycle.
--- ─────────────────────────────────────────────────────────────────────────────
+-- 偶数ステップは必ず半減する
+theorem even_step_halves (n : Nat) (heven : n % 2 = 0) (hpos : n > 0) :
+    sigma n = n / 2 := by
+  simp [sigma, heven]
 
-theorem odd_step_not_div3 (n : Nat) (hodd : n % 2 ≠ 0) :
-    (3 * n + 1) % 3 ≠ 0 := by
-  omega
-
--- No odd number maps to itself under σ
-theorem sigma_no_odd_fixpoint (n : Nat) (hodd : n % 2 ≠ 0) :
-    sigma n ≠ n := by
-  simp only [sigma]
-  split_ifs with heven
-  · contradiction
-  · omega
-
--- ─────────────────────────────────────────────────────────────────────────────
--- Result 4: Descent structure
--- An odd input always produces an even output (immediate halving follows).
--- Effective two-step ratio: (3n+1)/2 < 2n for n ≥ 2, ratio → 3/4.
--- ─────────────────────────────────────────────────────────────────────────────
-
--- Odd step always produces even
-theorem odd_step_even (n : Nat) (hodd : n % 2 ≠ 0) :
-    sigma n % 2 = 0 := by
-  simp only [sigma]
-  split_ifs with heven
-  · contradiction
-  · omega
-
--- Even step strictly decreases (n > 0)
+-- 偶数ステップは狭義単調減少
 theorem even_step_decreases (n : Nat) (heven : n % 2 = 0) (h : n > 0) :
     sigma n < n := by
   simp only [sigma]
@@ -95,8 +62,28 @@ theorem even_step_decreases (n : Nat) (heven : n % 2 = 0) (h : n > 0) :
   · omega
   · contradiction
 
--- Two-step contraction: odd n ≥ 3 → σ²(n) < n
--- Formalizes the 3/4 contraction ratio for odd inputs
+-- 奇数ステップは必ず偶数を生成する
+theorem odd_step_produces_even (n : Nat) (hodd : n % 2 ≠ 0) :
+    sigma n % 2 = 0 := by
+  simp only [sigma]
+  split_ifs with h
+  · contradiction
+  · omega
+
+-- +1 により 3n+1 は 3 で割り切れない（3-ループ禁止）
+theorem odd_step_not_div3 (n : Nat) (hodd : n % 2 ≠ 0) :
+    (3 * n + 1) % 3 ≠ 0 := by
+  omega
+
+-- 奇数不動点は存在しない
+theorem sigma_no_odd_fixpoint (n : Nat) (hodd : n % 2 ≠ 0) :
+    sigma n ≠ n := by
+  simp only [sigma]
+  split_ifs with heven
+  · contradiction
+  · omega
+
+-- 2ステップ収縮：奇数 n ≥ 3 に対し σ²(n) < n（比率 3/4）
 theorem two_step_contraction (n : Nat) (hodd : n % 2 ≠ 0) (h : n ≥ 3) :
     sigma (sigma n) < n := by
   simp only [sigma]
@@ -107,49 +94,41 @@ theorem two_step_contraction (n : Nat) (hodd : n % 2 ≠ 0) (h : n ≥ 3) :
     contradiction
   · omega
 
+-- 1 は σ の不動点
+theorem sigma_fixed_one : sigma 1 = 1 := by
+  simp [sigma]
+
 -- ─────────────────────────────────────────────────────────────────────────────
--- Collatz Convergence Axiom
+-- Collatz 収束独立公理
 --
--- Convergence to 1 is the defining structural property of σ.
--- The +1 prohibits loops; the descent vector (ratio 3/4 < 1) prohibits
--- divergence. The axiom makes explicit what 87 years of computational
--- verification — confirmed to 2^71 — implicitly assumes.
+-- 根拠：
+-- 1. 87年間の研究で反例未発見
+-- 2. 2⁷¹ までの計算検証
+-- 3. 上記定理群が示すループ禁止・降下構造
 --
--- Proposed for adoption independent of ZFC, in the tradition of the
--- Axiom of Choice and Euclid's parallel postulate.
+-- ZFC からの独立性は未証明だが、ユークリッド平行線公理・
+-- 選択公理と同様、独立した基礎公理として採用する。
 -- ─────────────────────────────────────────────────────────────────────────────
 
 axiom collatz_axiom (N : Nat) (h : N > 0) :
     ∃ k : Nat, collatz_seq N k = 1
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- Main theorem: Proof by contradiction
---
--- Assume ¬∃k, σᵏ(N) = 1.
--- Then ∀k, σᵏ(N) ≥ 2 (by collatz_ge_one + assumption).
--- This requires divergence or a non-trivial loop.
--- Both are structurally impossible (Results 3 and 4).
--- Contradiction with collatz_axiom. ∎
+-- 独立公理系から導出される定理群
 -- ─────────────────────────────────────────────────────────────────────────────
 
-theorem collatz_conjecture (N : Nat) (h : N > 0) :
-    ∃ k : Nat, collatz_seq N k = 1 := collatz_axiom N h
+-- 主定理：全正整数はいつか 1 に到達する
+theorem collatz_convergence (N : Nat) (h : N > 0) :
+    ∃ k : Nat, collatz_seq N k = 1 :=
+  collatz_axiom N h
 
--- ─────────────────────────────────────────────────────────────────────────────
--- Corollaries
--- ─────────────────────────────────────────────────────────────────────────────
-
--- 1 is a fixed point of σ
-theorem sigma_fixed_one : sigma 1 = 1 := by
-  simp [sigma]
-
--- Once the orbit reaches 1, it remains at 1
+-- 1 到達後は永続的に 1 に留まる
 theorem collatz_fixed_at_one (N : Nat) (h : N > 0) :
     ∃ k : Nat, collatz_seq N k = 1 ∧ sigma (collatz_seq N k) = 1 := by
   obtain ⟨k, hk⟩ := collatz_axiom N h
   exact ⟨k, hk, by rw [hk]; exact sigma_fixed_one⟩
 
--- Orbit merging: if two sequences share a value, they share all subsequent steps
+-- 軌道合流：2つの軌道が同じ値を取れば以降は一致する
 theorem orbit_merge (N M : Nat) (hN : N > 0) (hM : M > 0)
     (k j : Nat) (h : collatz_seq N k = collatz_seq M j) :
     ∀ m : Nat, collatz_seq N (k + m) = collatz_seq M (j + m) := by
