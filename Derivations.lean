@@ -25,9 +25,8 @@ Structural changes from prior version:
 5. `exampleFalsifiable` sorry closed via `action_nil` + `norm_num`
 -/
 
--- ─────────────────────────────────────────────────────────────────────────────
 -- 1. Spacetime point
--- ─────────────────────────────────────────────────────────────────────────────
+-- ────────────────────────────────────────────────────────────────────
 
 structure SpacetimePoint where
   t : ℝ
@@ -41,29 +40,25 @@ def zero : SpacetimePoint :=
   { t := 0, x := 0, y := 0, z := 0, g := 0 }
 end SpacetimePoint
 
--- ─────────────────────────────────────────────────────────────────────────────
 -- 2. Trajectory
--- ─────────────────────────────────────────────────────────────────────────────
+-- ────────────────────────────────────────────────────────────────────
 
 def Trajectory := List SpacetimePoint
 
--- ─────────────────────────────────────────────────────────────────────────────
 -- 3. Scalar curvature = metric trace
--- ─────────────────────────────────────────────────────────────────────────────
+-- ────────────────────────────────────────────────────────────────────
 
 def ScalarCurvature (p : SpacetimePoint) : ℝ :=
   Matrix.trace p.g
 
--- ─────────────────────────────────────────────────────────────────────────────
 -- 4. Einstein-Hilbert action
--- ─────────────────────────────────────────────────────────────────────────────
+-- ────────────────────────────────────────────────────────────────────
 
 def EinsteinHilbertAction (γ : Trajectory) : ℝ :=
   (γ.map ScalarCurvature).sum
 
--- ─────────────────────────────────────────────────────────────────────────────
 -- Core lemmas
--- ─────────────────────────────────────────────────────────────────────────────
+-- ────────────────────────────────────────────────────────────────────
 
 @[simp]
 lemma action_nil : EinsteinHilbertAction [] = 0 := by
@@ -89,9 +84,8 @@ lemma action_nonneg (γ : Trajectory)
     exact add_nonneg (h hd (List.mem_cons_self hd tl))
       (ih (fun p hp => h p (List.mem_cons_of_mem hd hp)))
 
--- ─────────────────────────────────────────────────────────────────────────────
 -- 5. Variation
--- ─────────────────────────────────────────────────────────────────────────────
+-- ────────────────────────────────────────────────────────────────────
 
 def Variation (γ δγ : Trajectory) (ε : ℝ) : Trajectory :=
   List.zipWith
@@ -103,23 +97,20 @@ def Variation (γ δγ : Trajectory) (ε : ℝ) : Trajectory :=
         g := p.g })
     γ δγ
 
--- ─────────────────────────────────────────────────────────────────────────────
 -- 6. Euler-Lagrange (finite difference)
--- ─────────────────────────────────────────────────────────────────────────────
+-- ────────────────────────────────────────────────────────────────────
 
 def EulerLagrange (γ δγ : Trajectory) (ε : ℝ) : ℝ :=
   (EinsteinHilbertAction (Variation γ δγ ε) - EinsteinHilbertAction γ) / ε
 
--- ─────────────────────────────────────────────────────────────────────────────
 -- 7. Gradient-descent update
--- ─────────────────────────────────────────────────────────────────────────────
+-- ────────────────────────────────────────────────────────────────────
 
 def updateTrajectory (γ δγ : Trajectory) (ε : ℝ) : Trajectory :=
   Variation γ δγ (-ε)
 
--- ─────────────────────────────────────────────────────────────────────────────
 -- 8. Simulation loop (structural recursion on Nat)
--- ─────────────────────────────────────────────────────────────────────────────
+-- ────────────────────────────────────────────────────────────────────
 
 def simulate (steps : Nat) (ε : ℝ) (trajectories : List Trajectory) :
     List Trajectory :=
@@ -133,9 +124,8 @@ def simulate (steps : Nat) (ε : ℝ) (trajectories : List Trajectory) :
         loop n updated
   loop steps trajectories
 
--- ─────────────────────────────────────────────────────────────────────────────
 -- 9. A4: Macro action with convex weight structure
--- ─────────────────────────────────────────────────────────────────────────────
+-- ────────────────────────────────────────────────────────────────────
 
 structure MacroWeights (ι : Type) [Fintype ι] where
   w       : ι → ℝ
@@ -150,9 +140,8 @@ def MacroAction
     (γ : Trajectory) : ℝ :=
   ∑ i, W.w i * Fmicro i γ
 
--- ─────────────────────────────────────────────────────────────────────────────
 -- 10. A3: Non-vacuous consistency
--- ─────────────────────────────────────────────────────────────────────────────
+-- ────────────────────────────────────────────────────────────────────
 
 structure IntegratedFramework where
   L           : Trajectory → ℝ
@@ -161,9 +150,8 @@ structure IntegratedFramework where
   holds       : C F
   falsifiable : ∃ G : Trajectory → ℝ, ¬ C G
 
--- ─────────────────────────────────────────────────────────────────────────────
 -- 11. Universe
--- ─────────────────────────────────────────────────────────────────────────────
+-- ────────────────────────────────────────────────────────────────────
 
 structure Universe where
   framework    : IntegratedFramework
@@ -171,17 +159,14 @@ structure Universe where
   macroAction  : List Trajectory → ℝ
   simulateStep : Nat → ℝ → List Trajectory → List Trajectory
 
--- ─────────────────────────────────────────────────────────────────────────────
 -- 12. Minkowski metric and particles
--- ─────────────────────────────────────────────────────────────────────────────
+-- ────────────────────────────────────────────────────────────────────
 
 def minkowskiMetric : Matrix (Fin 4) (Fin 4) ℝ :=
   ![![-1, 0, 0, 0], ![0, 1, 0, 0], ![0, 0, 1, 0], ![0, 0, 0, 1]]
 
 lemma minkowski_trace : Matrix.trace minkowskiMetric = 2 := by
-  simp [Matrix.trace, Matrix.diag, minkowskiMetric,
-        Fin.sum_univ_four, Matrix.cons_val_zero,
-        Matrix.cons_val_one, Matrix.head_cons]
+  simp [Matrix.trace, Matrix.diag, minkowskiMetric]
   norm_num
 
 def particle1 : Trajectory :=
@@ -192,7 +177,6 @@ def particle2 : Trajectory :=
   (List.range 100).map fun n =>
     { t := n * 0.01, x := -(n * 0.01), y := 0, z := 0, g := minkowskiMetric }
 
--- ─────────────────────────────────────────────────────────────────────────────
 -- 13. Consistency predicate and falsifiability — no sorry
 --
 -- Strategy: ActionEquality F := F = EinsteinHilbertAction
@@ -200,7 +184,7 @@ def particle2 : Trajectory :=
 -- Proof:    congr_fun h [] gives (-1 : ℝ) = EinsteinHilbertAction []
 --           action_nil reduces rhs to 0
 --           simp gives -1 = 0, closed by norm_num (embedded in simp)
--- ─────────────────────────────────────────────────────────────────────────────
+-- ────────────────────────────────────────────────────────────────────
 
 def ActionEquality : (Trajectory → ℝ) → Prop :=
   fun F => F = EinsteinHilbertAction
@@ -214,9 +198,8 @@ theorem exampleFalsifiable : ∃ G : Trajectory → ℝ, ¬ ActionEquality G :=
       congr_fun h []
     simp [action_nil] at h0⟩
 
--- ─────────────────────────────────────────────────────────────────────────────
 -- 14. Example universe instance
--- ─────────────────────────────────────────────────────────────────────────────
+-- ────────────────────────────────────────────────────────────────────
 
 def example_universe : Universe :=
   { framework :=
@@ -230,9 +213,8 @@ def example_universe : Universe :=
       γs.foldl (fun acc γ => acc + EinsteinHilbertAction γ) 0
     simulateStep := simulate }
 
--- ─────────────────────────────────────────────────────────────────────────────
 -- 15. Sanity lemma: particle1 has strictly positive action
--- ─────────────────────────────────────────────────────────────────────────────
+-- ────────────────────────────────────────────────────────────────────
 
 lemma minkowski_curvature (p : SpacetimePoint) (hp : p.g = minkowskiMetric) :
     ScalarCurvature p = 2 := by
