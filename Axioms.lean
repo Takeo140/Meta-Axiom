@@ -56,7 +56,7 @@ structure IsConsistent {X : Type}
 -- Macro function is a convex combination of micro functions.
 -- Constraint: weights are non-negative and sum to 1.
 -- ─────────────────────────────────────────────────
-structure HierarchicalMacro {ι : Type} [Fintype ι] (X : Type) where
+structure HierarchicalMacro (X : Type) {ι : Type} [Fintype ι] where
   w       : ι → ℝ
   Fmicro  : ι → X → ℝ
   hNonNeg : ∀ i, 0 ≤ w i
@@ -113,6 +113,7 @@ lemma macro_nonneg {ι : Type} [Fintype ι] {X : Type}
     (hF : ∀ i x, 0 ≤ H.Fmicro i x)
     (x : X) :
     0 ≤ MacroFunction H x := by
+  unfold MacroFunction
   apply Finset.sum_nonneg
   intro i _
   exact mul_nonneg (H.hNonNeg i) (hF i x)
