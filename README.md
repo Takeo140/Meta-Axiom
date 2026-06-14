@@ -2,7 +2,7 @@
 
 [![Lean 4](https://img.shields.io/badge/Lean-4-orange.svg)](https://leanprover.github.io/)
 LICENSE Apache2.0
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18603974.svg)](https://doi.org/10.5281/zenodo.18603974)
+[![DOI](https://zenodo.org/badge/1155419122.svg)](https://doi.org/10.5281/zenodo.20693154)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/TakeoYamamoto/Meta-Axiom/graphs/commit-activity)
 
 This repository provides a formal Lean 4 formalization of the **"Four Meta-Axioms"** (collectively referred to as **F-Theory**) proposed by **Takeo Yamamoto**.
