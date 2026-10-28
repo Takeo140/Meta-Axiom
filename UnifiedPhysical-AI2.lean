@@ -58,22 +58,16 @@ theorem isUnit_natCast_of_odd (m : Nat) (hm : m % 2 = 1) :
 /-- 状態係数（LCG 乗数）は可逆 -/
 theorem stateConst_isUnit : IsUnit (6364136223846793005 : Word) := by
   have h := isUnit_natCast_of_odd 6364136223846793005 (by norm_num)
-  first
-    | exact_mod_cast h
-    | simpa using h
+  simpa using h
 
 /-- 行動係数（LCG 加数）は可逆 -/
 theorem actionConst_isUnit : IsUnit (1442695040888963407 : Word) := by
   have h := isUnit_natCast_of_odd 1442695040888963407 (by norm_num)
-  first
-    | exact_mod_cast h
-    | simpa using h
+  simpa using h
 
 /-- 可逆元による右簡約 -/
 theorem cancel_right {u a b : Word} (hu : IsUnit u) (h : a * u = b * u) : a = b := by
-  first
-    | exact hu.mul_right_cancel h
-    | exact (hu.mul_left_inj).mp h
+  exact hu.mul_right_cancel h
 
 /-- 状態について単射：状態遷移は情報を失わない -/
 theorem uhaStep_injective_state (a d : Word) :
@@ -167,7 +161,7 @@ theorem FState.isStationary_trans {s s' s'' : FState}
     (h₁ : s.IsStationary s') (h₂ : s'.IsStationary s'') :
     s.IsStationary s'' := by
   rw [FState.isStationary_iff] at h₁ h₂ ⊢
-  exact h₂.trans h₁
+  exact h₁.trans h₂
 
 /-- ゲージ不変性：energy と entropy に同じ定数を足しても F は不変 -/
 theorem FState.evaluateF_shift (s : FState) (c : Word) :
@@ -304,12 +298,12 @@ theorem PhysicalSystem.run_append (sys : PhysicalSystem) :
       sys.run s (ds ++ es) = sys.run (sys.run s ds) es := by
   intro ds
   induction ds with
-  | nil => intro es s; rfl
+  | nil =>
+      intro es s
+      rfl
   | cons d ds ih =>
-    intro es s
-    first
-      | exact ih es (sys.cycle s d)
-      | simp [PhysicalSystem.run, ih]
+      intro es s
+      simp [PhysicalSystem.run, ih]
 
 /-!
 ============================================================
@@ -448,14 +442,12 @@ def safetyCase (bound : Nat) (pl : Planner) (ct : Controller) :
   sense_sound := fun _ => rfl
   action_safe := by
     intro z s a _ _ h d _
-    have h' : decide (ZMod.val a ≤ bound) = true := h
-    exact of_decide_eq_true h'
+    change ZMod.val a ≤ bound
+    simpa [SafetyShield.bounded] using h
   fallback_safe := by
     intro z s _ _ d _
-    show ZMod.val (0 : Word) ≤ bound
-    first
-      | (rw [ZMod.val_zero]; exact Nat.zero_le _)
-      | simp
+    change ZMod.val (0 : Word) ≤ bound
+    simpa using (Nat.zero_le bound)
 
 /-- 定理：どんな Planner / Controller / 外乱列でも、初期状態が境界内なら
     実行後も境界内（Fail-Closed シールドによる保証）。 -/
